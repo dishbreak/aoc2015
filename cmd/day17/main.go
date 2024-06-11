@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -17,6 +18,7 @@ func main() {
 
 	input := parseInput(f)
 	fmt.Printf("Part 1: %d\n", part1(150, input))
+	fmt.Printf("Part 2: %d\n", part2(150, input))
 }
 
 func parseInput(r io.Reader) (result []int) {
@@ -33,17 +35,45 @@ func parseInput(r io.Reader) (result []int) {
 	return
 }
 
-func part1(eggNogLiters int, containerSizes []int) int {
-	acc := make(map[int]bool)
+type frame struct {
+	amountLeft int
+	containers int
+	count      int
+}
 
-	type frame struct {
-		amountLeft int
-		containers int
+func part1(eggNogLiters int, containerSizes []int) int {
+	return len(solve(eggNogLiters, containerSizes))
+}
+
+func part2(eggNogLiters int, containerSizes []int) int {
+	solutions := solve(eggNogLiters, containerSizes)
+
+	frames := make([]frame, 0)
+
+	for _, v := range solutions {
+		frames = append(frames, v)
 	}
+
+	sort.Slice(frames, func(i, j int) bool {
+		return frames[i].count < frames[j].count
+	})
+
+	return func() int {
+		for i := 0; i < len(frames)-1; i++ {
+			if frames[i+1].count != frames[i].count {
+				return i + 1
+			}
+		}
+		return -1
+	}()
+}
+
+func solve(eggNogLiters int, containerSizes []int) map[int]frame {
+	acc := make(map[int]frame)
 
 	q := make([]frame, 0)
 
-	q = append(q, frame{eggNogLiters, 0})
+	q = append(q, frame{eggNogLiters, 0, 0})
 
 	for len(q) != 0 {
 		f := q[0]
@@ -57,7 +87,7 @@ func part1(eggNogLiters int, containerSizes []int) int {
 		// if we've got no nog left, we're set
 		if f.amountLeft == 0 {
 			//register the combination of containers as
-			acc[f.containers] = true
+			acc[f.containers] = f
 			continue
 		}
 
@@ -74,9 +104,10 @@ func part1(eggNogLiters int, containerSizes []int) int {
 			var nf frame
 			nf.containers = f.containers | (1 << i)
 			nf.amountLeft = f.amountLeft - c
+			nf.count = f.count + 1
 			q = append(q, nf)
 		}
 	}
 
-	return len(acc)
+	return acc
 }
