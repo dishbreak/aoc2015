@@ -60,3 +60,40 @@ HOHOHO`,
 		})
 	}
 }
+
+func TestPart2(t *testing.T) {
+	type testCase struct {
+		input  string
+		result int
+	}
+
+	testCases := []testCase{
+		{
+			input: `H => HO
+H => OH
+O => HH
+e => O
+e => H
+
+HOH`,
+			result: 3,
+		},
+		{
+			input: `H => HO
+H => OH
+O => HH
+e => O
+e => H
+
+HOHOHO`,
+			result: 6,
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint("test case ", i), func(t *testing.T) {
+			r := strings.NewReader(tc.input)
+			assert.Equal(t, tc.result, part2(r))
+		})
+	}
+}
