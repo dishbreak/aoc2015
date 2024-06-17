@@ -90,5 +90,8 @@ func part2(r io.Reader) int {
 	symbolsAll := len(reCapitalLetter.FindAllString(molecule, -1))
 	symbolsRnAr := len(reRn.FindAllString(molecule, -1))
 	symbolsY := len(reY.FindAllString(molecule, -1))
+	if symbolsRnAr == 0 {
+		return symbolsAll
+	}
 	return symbolsAll - 2*(symbolsRnAr+symbolsY) - 1
 }
