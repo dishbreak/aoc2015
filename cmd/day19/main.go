@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"math"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -65,6 +65,11 @@ func findIndexes(s string, m string) (idxs []int) {
 
 func part1(r io.Reader) int {
 	molecule, replacements := parseInput(r)
+	molecules := doReplacement(molecule, replacements)
+	return len(molecules)
+}
+
+func doReplacement(molecule string, replacements []replacement) map[string]int {
 	molecules := make(map[string]int)
 	for _, rep := range replacements {
 		idxs := findIndexes(molecule, rep.old)
@@ -72,41 +77,18 @@ func part1(r io.Reader) int {
 			molecules[replaceMolecule(molecule, idx, rep.old, rep.new)]++
 		}
 	}
-
-	return len(molecules)
+	return molecules
 }
 
+var reCapitalLetter = regexp.MustCompile(`[A-Z]`)
+var reRn = regexp.MustCompile(`Rn`)
+var reY = regexp.MustCompile(`Y`)
+
 func part2(r io.Reader) int {
-	molecule, replacements := parseInput(r)
+	molecule, _ := parseInput(r)
 
-	type frame struct {
-		molecule string
-		steps    int
-	}
-
-	q := make([]frame, 1)
-	q[0] = frame{molecule: molecule, steps: 0}
-
-	minSteps := math.MaxInt
-	for len(q) > 0 {
-		f := q[0]
-		q = q[1:]
-
-		if f.molecule == "e" && f.steps < minSteps {
-			minSteps = f.steps
-			continue
-		}
-
-		for _, rep := range replacements {
-			idxs := findIndexes(f.molecule, rep.new)
-			for _, idx := range idxs {
-				var nf frame
-				nf.steps = f.steps + 1
-				nf.molecule = replaceMolecule(f.molecule, idx, rep.new, rep.old)
-				q = append(q, nf)
-			}
-		}
-	}
-
-	return minSteps
+	symbolsAll := len(reCapitalLetter.FindAllString(molecule, -1))
+	symbolsRnAr := len(reRn.FindAllString(molecule, -1))
+	symbolsY := len(reY.FindAllString(molecule, -1))
+	return symbolsAll - 2*(symbolsRnAr+symbolsY) - 1
 }
